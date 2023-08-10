@@ -1,5 +1,15 @@
 version: "3"
 
+x-iglu-server: &iglu-server
+  image: snowplow/iglu-server:0.10.0
+  environment:
+    IGLU_SUPER_API_KEY: ${IGLU_SUPER_API_KEY:-5fb4713d-73ad-4163-93a9-2b82f0177c5b}
+    IGLU_DB_PASSWORD: ${IGLU_DB_PASSWORD:-iglusecret}
+  depends_on:
+    - postgres
+  volumes:
+    - "./iglu-server-config/application.conf:/snowplow/config/config.hocon"
+
 services:
 
   zookeeper:
@@ -60,25 +70,30 @@ services:
     environment:
       - "SP_JAVA_OPTS=-Xms512m -Xmx512m"
 
-  iglu-postgres:
-    container_name: iglu-postgres
-    image: postgres:10
-    volumes:
-      - ./iglu-server-config/init.sql:/docker-entrypoint-initdb.d/init.sql
+  postgres:
+    image: postgres:12
+    restart: always
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_DB: igludb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${IGLU_DB_PASSWORD:-iglusecret}
 
   iglu-server:
-    container_name: iglu-server
-    image: snowplow-docker-registry.bintray.io/snowplow/iglu-server:0.4.0
-    entrypoint: /usr/local/bin/wait-for-postgres.sh iglu-postgres --config /snowplow/config/application.conf
-    depends_on:
-      - iglu-postgres
+    <<: *iglu-server
+    command: --config /snowplow/config/config.hocon
     ports:
       - "8081:8081"
-    volumes:
-      - ./iglu-server-config/wait-for-postgres.sh:/usr/local/bin/wait-for-postgres.sh
-      - ./iglu-server-config/application.conf:/snowplow/config/application.conf
-    environment:
-      - "SP_JAVA_OPTS=-Xms512m -Xmx512m"
+
+  iglu-initializer:
+    <<: *iglu-server
+    command: setup --config /snowplow/config/config.hocon
 
   web:
     image: nginx
