@@ -6,7 +6,7 @@
       {
         "name": "Iglu Central",
         "priority": 0,
-        "vendorPrefixes": [ "com.snowplowanalytics" ],
+        "vendorPrefixes": ["com.snowplowanalytics"],
         "connection": {
           "http": {
             "uri": "http://iglucentral.com"
@@ -14,22 +14,13 @@
         }
       },
       {
-        "name": "Iglu Central - GCP Mirror",
-        "priority": 1,
-        "vendorPrefixes": [ "com.snowplowanalytics" ],
-        "connection": {
-          "http": {
-            "uri": "http://mirror01.iglucentral.com"
-          }
-        }
-      },
-      {
         "name": "Custom repo",
         "priority": 0,
-        "vendorPrefixes": [ "com.mycompany" ],
+        "vendorPrefixes": ["com.acme"],
         "connection": {
           "http": {
-            "uri": "http://iglu-server:8081/api"
+            "uri": "http://iglu-server:8080/api",
+            "apikey": "5fb4713d-73ad-4163-93a9-2b82f0177c5b"
           }
         }
       }

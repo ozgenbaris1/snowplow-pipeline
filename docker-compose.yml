@@ -58,10 +58,11 @@ services:
       - kafka
 
   stream-enrich:
-    image: snowplow/stream-enrich-kafka:3.8.1
+    image: snowplow/snowplow-enrich-kafka:3.8.1
     command: [
       "--config", "/snowplow/config/config.hocon",
-      "--resolver", "file:/snowplow/config/resolver.json"
+      "--enrichments", "/snowplow/config/enrichments",
+      "--iglu-config", "/snowplow/config/resolver.json"
     ]
     depends_on:
       - collector
@@ -89,7 +90,7 @@ services:
     <<: *iglu-server
     command: --config /snowplow/config/config.hocon
     ports:
-      - "8081:8081"
+      - "8081:8080"
 
   iglu-initializer:
     <<: *iglu-server
